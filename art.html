@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <img src="image3.jpg" style="display: none;" id="image" />
+    <!-- <img src="image2.jpg" style="display: none;" id="image" />
+    <img src="image3.jpg" style="display: none;" id="image" /> -->
+    <canvas id="canvas" style="width: 500px; height: 500px;">
+
+    </canvas>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script>
+        var MIN_SIZE = 40;
+        var MIN_SIZE_2 = 60;
+        var MAX_SIZE = 100;
+        var image = document.getElementById("image");
+        var canvas = document.getElementById('canvas');
+        canvas.setAttribute('width',image.width);
+        canvas.setAttribute('height',image.height);
+        var ctx = canvas.getContext('2d');
+
+
+        var imageCanvas = document.createElement('canvas');
+        imageCanvas.setAttribute('width',image.width);
+        imageCanvas.setAttribute('height',image.height);
+
+        imageCtx = imageCanvas.getContext('2d');
+
+        imageCtx.drawImage(image,0, 0);
+
+        var points = [];
+        for (var x = 0; x < image.width; x++) {
+            for (var y = 0; y < image.height; y++) {
+                points.push([x, y]);
+            }
+        }
+
+        points = _.shuffle(points);
+
+        var addedSplats = [];
+
+        function drawSplat(splat) {
+            ctx.beginPath();
+            ctx.arc(splat[1][0], splat[1][1], splat[0], 0, 2 * Math.PI, false);
+            ctx.fillStyle = splat[2];
+            ctx.fill();
+
+            for (var i = 0; i < 20; i++) {
+                ctx.beginPath();
+                ctx.arc(splat[1][0] + (((Math.random() * 2) - 1) * 0.5 * splat[0]), splat[1][1] + (((Math.random() * 2) - 1) * 0.5 * splat[0]), splat[0] * 0.5, 0, 2 * Math.PI, false);
+                ctx.fillStyle = splat[2];
+                ctx.fill();
+            }
+        }
+
+        function drawSplats() {
+            for (splati in addedSplats) {
+                var splat = addedSplats[splati];
+
+                
+                drawSplat(splat);
+                splat[0] += 10;
+
+                if (splat[0] > MAX_SIZE) {
+                    addedSplats.splice(splati, 1);
+                }
+            }
+        }
+
+
+        function addSplat() {
+            var nextPoint = points.pop();
+
+            var data = imageCtx.getImageData(nextPoint[0], nextPoint[1], 1, 1).data;
+            addedSplats.push([_.random(MIN_SIZE, MIN_SIZE_2), nextPoint, "rgb(" + data[0] + "," + data[1] + "," + data[2] + ")"]);
+
+            drawSplats();
+
+            setTimeout(addSplat, 1);
+        }
+        addSplat();
+    </script>
+</body>
+</html>
